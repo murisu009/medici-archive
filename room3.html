@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medici</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@1,400;1,900&family=Nanum+Myeongjo:wght@400;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #030303;
+            --accent: #e2c08d;
+            --border: rgba(255, 255, 255, 0.1);
+            --font-kr: 'Nanum Myeongjo', serif;
+            --font-en: 'Bodoni Moda', serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: var(--bg); color: #fff; font-family: 'Pretendard', sans-serif;
+            overflow: hidden; -webkit-font-smoothing: antialiased;
+        }
+
+        /* 배경 레이어 */
+        .bg-overlay { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, #111 0%, #030303 100%); z-index: 1; }
+        .bg-text {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: var(--font-en); font-size: 25vw; font-style: italic;
+            font-weight: 900; color: rgba(255, 255, 255, 0.02);
+            white-space: nowrap; pointer-events: none; z-index: 2; text-transform: uppercase;
+        }
+
+        /* 상단 네비게이션 */
+        .header-nav {
+            position: fixed; top: 50px; left: 50px; right: 50px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+        .nav-back { 
+            font-family: var(--font-mono); font-size: 10px; color: #444; 
+            text-decoration: none; letter-spacing: 5px; transition: 0.4s;
+        }
+        .nav-back:hover { color: #fff; letter-spacing: 7px; }
+
+        .lang-switcher { display: flex; gap: 15px; }
+        .lang-btn { 
+            background: none; border: none; color: #333; font-family: var(--font-mono);
+            font-size: 10px; cursor: pointer; transition: 0.4s; letter-spacing: 2px;
+        }
+        .lang-btn.active { color: var(--accent); border-bottom: 1px solid var(--accent); }
+
+        /* 메인 무대 */
+        .exhibit-stage { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .art-hero { position: relative; perspective: 2000px; cursor: pointer; }
+        .glitch-frame {
+            position: relative; padding: 10px; background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px); border: 1px solid var(--border);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5); transform-style: preserve-3d;
+        }
+        .main-img { height: 55vh; width: auto; min-width: 300px; display: block; filter: grayscale(0.5) contrast(1.1); transition: 1s; background: #222; }
+        .glitch-frame:hover .main-img { filter: grayscale(0) contrast(1); transform: scale(1.05); }
+
+        .art-info-floating { position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%); text-align: center; width: 600px; pointer-events: none; }
+        .art-info-floating .year { font-family: var(--font-en); color: var(--accent); font-size: 12px; letter-spacing: 5px; margin-bottom: 10px; display: block; }
+        .art-info-floating .title { font-family: var(--font-kr); font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+
+        /* 컨트롤 버튼 */
+        .nav-controls { position: absolute; bottom: 50px; right: 50px; display: flex; gap: 20px; }
+        .control-btn {
+            width: 60px; height: 60px; border: 1px solid var(--border); background: none;
+            color: #fff; cursor: pointer; transition: 0.4s; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--font-mono);
+        }
+        .control-btn:hover { background: #fff; color: #000; border-color: #fff; }
+
+        /* 오버레이 */
+        .overlay-master { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: flex-end; justify-content: center; }
+        .zoom-img-wrap { position: absolute; top: 10%; width: 100%; display: flex; justify-content: center; }
+        #zoom-img { max-height: 45vh; max-width: 80vw; object-fit: contain; }
+
+        .rising-card {
+            position: relative; width: 100%; max-width: 1200px; background: #111;
+            border-radius: 50px 50px 0 0; padding: 80px 100px 120px; transform: translateY(100%);
+            border: 1px solid var(--border); border-bottom: none;
+        }
+        .card-line { width: 60px; height: 2px; background: var(--accent); margin: 0 auto 40px; }
+        #m-title { font-family: var(--font-kr); font-size: 50px; font-weight: 800; text-align: center; margin-bottom: 30px; letter-spacing: -2px; }
+        #m-desc { font-family: var(--font-kr); font-size: 20px; line-height: 2.2; color: #ccc; text-align: center; word-break: keep-all; font-weight: 300; }
+        .close-btn { position: absolute; top: 40px; right: 40px; background: none; border: none; color: #fff; font-size: 14px; letter-spacing: 3px; cursor: pointer; opacity: 0.5; }
+        .close-btn:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-overlay"></div>
+    <div class="bg-text" id="bg-text-anim">ARCHIVE</div>
+
+    <header class="header-nav">
+        <a href="map.html" class="nav-back">← RETURN_TO_MAP</a>
+        <div class="lang-switcher">
+            <button class="lang-btn" id="btn-ko" onclick="setLang('ko')">KR</button>
+            <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+            <button class="lang-btn" id="btn-ja" onclick="setLang('ja')">JP</button>
+            <button class="lang-btn" id="btn-zh" onclick="setLang('zh')">CN</button>
+            <button class="lang-btn" id="btn-ar" onclick="setLang('ar')">AR</button>
+        </div>
+    </header>
+
+    <main class="exhibit-stage">
+        <div class="art-hero" onclick="openDetail()">
+            <div class="glitch-frame" id="tilt-frame">
+                <img id="wall-display" src="" class="main-img">
+                <div class="art-info-floating">
+                    <span class="year" id="ui-year">MEDICI ARCHIVE : ROOM 3</span>
+                    <h2 class="title" id="wall-title"></h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="control-btn" onclick="changeArt(-1)">PREV</button>
+            <button class="control-btn" onclick="changeArt(1)">NEXT</button>
+        </div>
+    </main>
+
+    <div class="overlay-master" id="overlay">
+        <div class="zoom-img-wrap"><img id="zoom-img" src=""></div>
+        <div class="rising-card" id="rising-card">
+            <button class="close-btn" onclick="closeDetail()">CLOSE ✕</button>
+            <div class="card-line"></div>
+            <h1 id="m-title"></h1>
+            <p id="m-desc"></p>
+        </div>
+    </div>
+
+    <script>
+        // ★ Room 3 데이터 (내용을 자유롭게 수정하세요) ★
+        const galleryData = [
+            {
+                src: "art9.jpg", bg: "HISTORY", year: "MEDICI ARCHIVE",
+                title: { ko: "작품 제목 9", en: "Title 9", ja: "タイトル 9", zh: "标题 9", ar: "عنوان 9" },
+                desc: { ko: "설명을 입력하세요.", en: "Description here.", ja: "説明...", zh: "说明...", ar: "وصف..." }
+            },
+            {
+                src: "art10.jpg", bg: "LEGACY", year: "MEDICI ARCHIVE",
+                title: { ko: "작품 제목 10", en: "Title 10", ja: "タイトル 10", zh: "标题 10", ar: "عنوان 10" },
+                desc: { ko: "설명을 입력하세요.", en: "Description here.", ja: "説明...", zh: "说明...", ar: "وصف..." }
+            },
+            {
+                src: "art11.jpg", bg: "ARTISTRY", year: "MEDICI ARCHIVE",
+                title: { ko: "작품 제목 11", en: "Title 11", ja: "タイトル 11", zh: "标题 11", ar: "عنوان 11" },
+                desc: { ko: "설명을 입력하세요.", en: "Description here.", ja: "説明...", zh: "说明...", ar: "وصف..." }
+            },
+            {
+                src: "art12.jpg", bg: "MOMENT", year: "MEDICI ARCHIVE",
+                title: { ko: "작품 제목 12", en: "Title 12", ja: "タイトル 12", zh: "标题 12", ar: "عنوان 12" },
+                desc: { ko: "설명을 입력하세요.", en: "Description here.", ja: "説明...", zh: "说明...", ar: "وصف..." }
+            }
+        ];
+
+        let currentIdx = 0;
+        let currentLang = localStorage.getItem('m_l') || 'ko';
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('m_l', lang);
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.id === 'btn-'+lang));
+            updateContent();
+        }
+
+        function updateContent() {
+            const data = galleryData[currentIdx];
+            document.getElementById('wall-title').innerText = data.title[currentLang];
+            document.getElementById('ui-year').innerText = data.year;
+            if(document.getElementById('overlay').style.display === 'flex') {
+                document.getElementById('m-title').innerText = data.title[currentLang];
+                document.getElementById('m-desc').innerText = data.desc[currentLang];
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setLang(currentLang);
+            if(galleryData.length > 0) {
+                document.getElementById('wall-display').src = galleryData[0].src;
+                document.getElementById('bg-text-anim').innerText = galleryData[0].bg;
+            }
+            gsap.from(".glitch-frame", { opacity: 0, scale: 0.8, y: 100, duration: 1.5, ease: "expo.out" });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            gsap.to("#tilt-frame", { rotateY: x, rotateX: -y, duration: 1.2 });
+            gsap.to("#bg-text-anim", { x: -x * 5, y: -y * 5, duration: 2 });
+        });
+
+        function changeArt(dir) {
+            currentIdx = (currentIdx + dir + galleryData.length) % galleryData.length;
+            const data = galleryData[currentIdx];
+            gsap.to("#tilt-frame", { opacity: 0, scale: 0.9, duration: 0.4, onComplete: () => {
+                document.getElementById('wall-display').src = data.src;
+                document.getElementById('bg-text-anim').innerText = data.bg;
+                updateContent();
+                gsap.to("#tilt-frame", { opacity: 1, scale: 1, duration: 0.8 });
+            }});
+        }
+
+        function openDetail() {
+            const data = galleryData[currentIdx];
+            document.getElementById('zoom-img').src = data.src;
+            document.getElementById('m-title').innerText = data.title[currentLang];
+            document.getElementById('m-desc').innerText = data.desc[currentLang];
+            document.getElementById('overlay').style.display = 'flex';
+            gsap.fromTo("#rising-card", { translateY: "100%" }, { translateY: "0%", duration: 1.5, ease: "expo.out" });
+        }
+
+        function closeDetail() {
+            gsap.to("#rising-card", { translateY: "100%", duration: 1, ease: "power3.in", onComplete: () => {
+                document.getElementById('overlay').style.display = 'none';
+            }});
+        }
+    </script>
+</body>
+</html>
