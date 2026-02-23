@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Medici</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@1,900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root { --bg: #030303; --accent: #d4b062; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'Pretendard', sans-serif; overflow: hidden; }
+
+        /* 언어 선택 버튼 */
+        .lang-switch { position: fixed; top: 50px; right: 60px; z-index: 1000; display: flex; gap: 20px; }
+        .lang-btn { background: none; border: none; color: #333; font-size: 11px; cursor: pointer; transition: 0.4s; letter-spacing: 2px; }
+        .lang-btn.active { color: var(--accent); border-bottom: 1px solid var(--accent); font-weight: bold; }
+
+        /* 중앙 로고 스테이지 */
+        .stage { height: 100vh; display: flex; align-items: center; justify-content: center; perspective: 1500px; }
+        .logo-box { position: relative; transform-style: preserve-3d; transition: transform 0.1s ease-out; }
+        .logo-st { font-family: 'Bodoni Moda'; font-size: 22vw; font-weight: 900; font-style: italic; color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.08); letter-spacing: -0.05em; }
+        .logo-fi { position: absolute; top: 0; left: 0; width: 100%; font-family: 'Bodoni Moda'; font-size: 22vw; font-weight: 900; font-style: italic; color: #fff; clip-path: inset(100% 0 0 0); letter-spacing: -0.05em; }
+
+        /* 진입 버튼 구역 */
+        .enter-zone { position: absolute; bottom: 12vh; text-align: center; width: 100%; }
+        .enter-link { display: inline-block; padding: 25px 100px; border: 1px solid rgba(255,255,255,0.1); color: transparent; text-decoration: none; font-size: 13px; letter-spacing: 20px; transition: 0.6s; pointer-events: none; }
+        .enter-link.active { color: #fff; border-color: #fff; pointer-events: auto; }
+        .enter-link.active:hover { background: #fff; color: #000; letter-spacing: 30px; }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <button class="lang-btn active" data-l="ko" onclick="sL('ko')">KR</button>
+        <button class="lang-btn" data-l="en" onclick="sL('en')">EN</button>
+        <button class="lang-btn" data-l="ja" onclick="sL('ja')">JP</button>
+        <button class="lang-btn" data-l="zh" onclick="sL('zh')">CN</button>
+        <button class="lang-btn" data-l="ar" onclick="sL('ar')">AR</button>
+    </div>
+
+    <div class="stage">
+        <div class="logo-box" id="L">
+            <div class="logo-st">MEDICI</div>
+            <div class="logo-fi" id="F">MEDICI</div>
+        </div>
+    </div>
+    <div class="enter-zone"><a href="map.html" class="enter-link" id="E">ENTER</a></div>
+
+    <script>
+        // 언어 설정 저장 및 표시
+        function sL(l){
+            localStorage.setItem('m_l', l);
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.l === l));
+        }
+        sL(localStorage.getItem('m_l') || 'ko');
+
+        // 마우스 반응 애니메이션
+        let canMove = false;
+        setTimeout(() => canMove = true, 500);
+
+        document.addEventListener('mousemove', (e) => {
+            if(!canMove) return;
+            const x = (e.clientX / window.innerWidth - 0.5) * 80;
+            const y = (e.clientY / window.innerHeight - 0.5) * 80;
+            gsap.to("#L", { rotateY: x, rotateX: -y, duration: 0.8 });
+        });
+
+        // 중앙 로고가 아래에서 위로 채워지는 애니메이션
+        gsap.to("#F", { clipPath: "inset(0% 0 0 0)", duration: 2, ease: "expo.inOut", onComplete: () => document.getElementById('E').classList.add('active') });
+    </script>
+</body>
+</html>
